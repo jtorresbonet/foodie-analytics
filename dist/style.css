@@ -1,0 +1,24 @@
+.css-gradient-animation {
+    background: linear-gradient(238deg, #3891d9, #d93893);
+    background-size: 400% 400%;
+
+    -webkit-animation: gradient_animation 30s ease infinite;
+    -moz-animation: gradient_animation 30s ease infinite;
+    animation: gradient_animation 30s ease infinite;
+}
+
+@-webkit-keyframes gradient_animation {
+    0%{background-position:0% 75%}
+    50%{background-position:100% 26%}
+    100%{background-position:0% 75%}
+}
+@-moz-keyframes gradient_animation {
+    0%{background-position:0% 75%}
+    50%{background-position:100% 26%}
+    100%{background-position:0% 75%}
+}
+@keyframes gradient_animation {
+    0%{background-position:0% 75%}
+    50%{background-position:100% 26%}
+    100%{background-position:0% 75%}
+}
