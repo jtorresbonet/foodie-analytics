@@ -1,4 +1,4 @@
-import { Chart } from "chart.js";
+import { Chart } from "chart.js/auto";
 
 const ctx = document.getElementById('myChart');
        
