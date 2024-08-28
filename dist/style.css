@@ -35,15 +35,62 @@ a.button {
   }
 
 
-#nav {
-    position:fixed;
-    background-color: #1d0c6821;
+  #nav {
+    position: fixed;
+    background-color: #ffffff60;
+    color: #4c4c72;
     width: 98%;
     height: 5%;
-    z-index:1;
-    top:2%;
-    left: 1%;
-    border-radius:10px;
+    z-index: 1;
+    top: 1%;
+    left: 0.5%;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    gap: 5%;
+    font-size: 1vw;
+    font-weight: 600;
+    box-shadow: 0px 2px 20px 0px rgba(196, 196, 196, 0.3);
+    opacity: 1;
+    transition: all 0.3s ease-in-out;
+    overflow: hidden;
+  }
+  
+  .nav-item {
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    z-index: 1;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .nav-item {
+    border-top:5px solid #ffffff00;
+  }
+ 
+  .nav-item.b:hover {
+    border-top:5px solid #3436ca;
+  }
+  
+  .nav-item.b.active {
+    border-top:5px solid #3436ca;
+  }
+
+#nav_header span {
+    background: linear-gradient(90deg, #2d6be2, #802ac8);
+    border-radius: 50px;
+    font-weight: 600;
+    padding: 2px;
+    color: #fff;
+    display: inline-block;
+    width: 25px;
+    text-align: center;
+    margin-right: 1.5vw;
+    margin-top: -1px;
+    margin-left: -1vw;
 }
 
 .header-image {
@@ -99,7 +146,7 @@ a.button {
     gap: 5%;
     margin-left: 5%;
     margin-right: 5%;
-
+    height: 80%;    
 }
 
 .container.flex .main{
@@ -161,9 +208,19 @@ canvas {
     -webkit-box-shadow: 0px 2px 20px 0px rgba(30, 33, 238, 0.6); 
     box-shadow: 0px 2px 20px 0px rgba(30, 33, 238, 0.6);
     color: #fff;
-    cursor:pointer;
-    
+    cursor:pointer; 
 }
+
+.data_menu {
+    padding-left: 0 !important; 
+    margin-right: 0;
+}
+
+.data_menu li {
+    margin-right: 0 !important;
+    cursor:auto !important;
+}
+
 
 .card_container {
     display: flex;
@@ -239,15 +296,13 @@ canvas {
 div.button {
     font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size:1.5vw;
-    color:#ffffff;
     font-weight:600;
     width:fit-content;
     padding:5px 40px;
     text-align:center;
     border-radius: 50px;
-    -webkit-box-shadow: 0px 2px 15px 0px rgba(36,37,139,0.4); 
-    box-shadow: 0px 2px 15px 0px rgba(36,37,139,0.4);
     transition: all .1s ease-in-out;
+    cursor:pointer;
 }
 
 div.button i {
@@ -256,20 +311,30 @@ div.button i {
 
 
 div.button.primary{
-    background: linear-gradient(60deg, #2d7ce2, #3436ca);
+    background: linear-gradient(90deg, #2d6be2, #802ac8);
+    color:#ffffff;
+    -webkit-box-shadow: 0px 2px 15px 0px rgba(36,37,139,0.4); 
+    box-shadow: 0px 2px 15px 0px rgba(36,37,139,0.4);
 }
 
 div.button.secondary{
-    background: linear-gradient(60deg, #89aaf3, #6d6ecf);
+    background: #d4dcec;
+    color: #242449;
+    border: 3px solid #998cca;
+    -webkit-box-shadow: 0px 2px 10px 0px rgba(121, 102, 172, 0.3);  
+    box-shadow: 0px 2px 10px 0px rgba(121, 102, 172, 0.3); 
 }
 
-
-div.button:hover {
-    cursor:pointer;
+div.button.primary:hover {
     transform:scale(1.05);
-    
     -webkit-box-shadow: 0px 8px 15px 0px rgba(36,37,139,0.2); 
     box-shadow: 5px 8px 15px 0px rgba(36,37,139,0.2);
+}
+
+div.button.secondary:hover {
+    transform:scale(1.05);
+    -webkit-box-shadow: 0px 8px 15px 0px rgba(121, 102, 172, 0.3); 
+    box-shadow: 5px 8px 15px 0px rgba(121, 102, 172, 0.3); 
 }
 
 .blob_bg svg{

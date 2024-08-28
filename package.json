@@ -1,0 +1,37 @@
+{
+  "name": "foodie-analytics",
+  "version": "1.0.0",
+  "description": "Analyticon 2024 project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jtorresbonet/foodie-analytics.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jtorresbonet/foodie-analytics/issues"
+  },
+  "homepage": "https://github.com/jtorresbonet/foodie-analytics#readme",
+  "dependencies": {
+    "bootstrap-icons": "^1.11.3",
+    "chart.js": "^4.4.3",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "chartjs-plugin-datalabels": "^2.2.0",
+    "date-fns": "^3.6.0",
+    "onnxruntime-web": "^1.19.0"
+  },
+  "devDependencies": {
+    "css-loader": "^7.1.2",
+    "imports-loader": "^5.0.0",
+    "node-loader": "^2.0.0",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.93.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-node-externals": "^3.0.0"
+  }
+}
