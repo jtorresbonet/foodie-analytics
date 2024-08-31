@@ -172,6 +172,9 @@ function get_data(ch) {
             display: true,
             text: 'Number of recipes over published time',
             color: "#242449",
+            padding: {
+              bottom: 40  // Space below the title (between title and chart)
+          },
             font: {
               size: 18
           }
@@ -212,7 +215,7 @@ function get_data(ch) {
       layout: {
         padding: {
           right: 20, // Add 20 pixels of extra padding to the right side
-          top: 20
+          top: 0
         }
       },
       maintainAspectRatio: false,
@@ -240,6 +243,9 @@ function get_data(ch) {
           display: true,
           text: 'Average rating over published time',
           color: "#242449",
+          padding: {
+            bottom: 40  // Space below the title (between title and chart)
+        },
           font: {
             size: 18
         }
@@ -302,6 +308,9 @@ if (ch == 'n_authors') {
         display: true,
         text: 'Number of unique contributors over time',
         color: "#242449",
+        padding: {
+          bottom: 40  // Space below the title (between title and chart)
+      },
         font: {
           size: 18
       }
@@ -343,7 +352,7 @@ if (ch == 'n_authors') {
   layout: {
     padding: {
       right: 20, // Add 20 pixels of extra padding to the right side
-      top: 20
+      top: 0
     }
   },
   maintainAspectRatio: false,
@@ -426,6 +435,9 @@ if (ch == 'n_description_length') {
         display: true,
         text: 'Number of unique contributors over time',
         color: "#242449",
+        padding: {
+          bottom: 40  // Space below the title (between title and chart)
+      },
         font: {
           size: 18
       }
@@ -467,7 +479,7 @@ if (ch == 'n_description_length') {
   layout: {
     padding: {
       right: 20, // Add 20 pixels of extra padding to the right side
-      top: 20
+      top: 0
     }
   },
   maintainAspectRatio: false,
@@ -493,6 +505,9 @@ if (ch == 'n_healthy_composition') {
         display: true,
         text: 'Content of healthy and non-healthy recipes',
         color: "#242449",
+        padding: {
+          bottom: 40  // Space below the title (between title and chart)
+      },
         font: {
           size: 18
       }
@@ -566,6 +581,9 @@ if (ch == 'n_healthy_time') {
         display: true,
         text: 'Number and % of healthy recipes published over time',
         color: "#242449",
+        padding: {
+          bottom: 40  // Space below the title (between title and chart)
+      },
         font: {
           size: 18
       }
@@ -586,7 +604,7 @@ if (ch == 'n_healthy_time') {
   },
   layout: {
     padding: {
-      top: 20
+      top: 0
     }
   },
   maintainAspectRatio: false,
@@ -657,7 +675,6 @@ function display_chart(ch) {
   let explanation_text_id = "explanation_text";
 
   turn_on_charts(true);
-  console.log(1)
   let [data,type, options, explanation] = get_data(ch);
 
   document.getElementById(explanation_text_id).innerHTML = explanation;
@@ -748,7 +765,6 @@ function predictWithDecisionTree(input) {
       'ProteinContent']
 
       
-    console.log(features)
 
   function getFeatureIndex(featureName) {
     return features.indexOf(featureName);
@@ -757,7 +773,6 @@ function predictWithDecisionTree(input) {
   function handleTruncatedBranch(classDistribution) {
     let maxClass = null;
     let maxCount = -1;
-    console.log(classDistribution)
 
     for (const [classLabel, count] of Object.entries(classDistribution)) {
         if (count > maxCount) {
@@ -765,7 +780,7 @@ function predictWithDecisionTree(input) {
             maxCount = count;
         }
     }
-    console.log(maxClass)
+
     return maxClass;
 }
 
@@ -778,9 +793,6 @@ function predictWithDecisionTree(input) {
           continue;  // Skip backtracking in the tree
       }
 
-      console.log(node.rule)
-      console.log(currentIndent)
-      console.log(node.indent)
 
       if (node.truncated) {
         return handleTruncatedBranch(node.class_distribution);
@@ -843,6 +855,7 @@ function draw_prediction(user_data, prediction) {
           display: true,
           text: 'Healthy, Non-Healthy and User Input composition',
           color: "#242449",
+
           font: {
             size: 18
         }
@@ -924,7 +937,6 @@ function predictClass() {
   const data = [calories, fatContent, saturatedFatContent, cholesterolContent, sodiumContent, carbohydrateContent, fiberContent, sugarContent, proteinContent];
   const predictionModel = document.querySelector('input[name="predictionModel"]:checked').value;
 
-  console.log(data)
 
 
   let prediction;
