@@ -194,9 +194,79 @@
       </div>
 
       <div id="page_5" class ="page">
-         <div class = "container flex">
-         </div>
+         <div class = "container flex" style ="height:90%"> 
+            <div  class="main">
+               <h1>Try it out:</h1>  
+               <h4>Use the sliders below to select your food composition. Linear Regression or Decision Tree <b>models will try to predict whether it is a healthy choice!</b></h4>
+               <div>
+                  <div class="form-group" style ="justify-content: space-evenly;">  
+                     <div>
+                        <input type="radio" id="linearRegression" name="predictionModel" value="linearRegression" checked>
+                        <label for="linearRegression">Linear Regression</label>
+                     </div>
+                     <div>
+                        <input type="radio" id="decisionTree" name="predictionModel" value="decisionTree">
+                        <label for="decisionTree">Decision Tree</label> 
+                     </div> 
+                  </div>
+                  <div class="form-group">
+                    <label for="calories">Calories:</label>
+                    <input type="range" id="calories" min="0" max="1000" value="235" oninput="this.nextElementSibling.value = this.value;">
+                    <output>235</output>
+                  </div>
+                  <div class="form-group">
+                    <label for="fatContent">Fat Content:</label>
+                    <input type="range" id="fatContent" min="0" max="60" value="22" oninput="this.nextElementSibling.value = this.value;">
+                    <output>22</output>
+                  </div>
+                  <div class="form-group">
+                    <label for="saturatedFatContent">Saturated Fat Content:</label>
+                    <input type="range" id="saturatedFatContent" min="0" max="20" value="16" oninput="this.nextElementSibling.value = this.value;">
+                    <output>16</output>
+                  </div>
+                  <div class="form-group">
+                    <label el for="cholesterolContent">Cholesterol Content:</label>
+                    <input type="range" id="cholesterolContent" min="0" max="200" value="90" oninput="this.nextElementSibling.value = this.value;"> 
+                    <output>90</output>
+                  </div>
+                  <div class="form-group">
+                    <label for="sodiumContent">Sodium Content:</label>
+                    <input type="range" id="sodiumContent" min="0" max="1000" value="368" oninput="this.nextElementSibling.value = this.value;">
+                    <output>368</output>
+                  </div>
+                  <div class="form-group">
+                    <label for="carbohydrateContent">Carbohydrate Content:</label>
+                    <input type="range" id="carbohydrateContent" min="0" max=150" value="84" oninput="this.nextElementSibling.value = this.value;">
+                    <output>84</output>
+                  </div>
+                  <div class="form-group">
+                    <label for="fiberContent">Fiber Content:</label>
+                    <input type="range" id="fiberContent" min="0" max="10" value="7" oninput="this.nextElementSibling.value = this.value;">
+                    <output>7</output>
+                  </div>
+                  <div class="form-group">
+                    <label for="sugarContent">Sugar Content:</label>
+                    <input type="range" id="sugarContent" min="0" max="50" value="20" oninput="this.nextElementSibling.value = this.value;">
+                    <output>20</output>
+                  </div>
+                  <div class="form-group">
+                    <label for="proteinContent">Protein Content:</label>
+                    <input type="range" id="proteinContent" min="0" max="30" value="12" oninput="this.nextElementSibling.value = this.value;">
+                    <output>12</output>
+                  </div>
+                  <div style ="margin-top: 8%; display: flex; justify-content: space-around;">   
+                     <div id = "submit_results" class = "button secondary" ><i class="bi bi-rocket-takeoff"></i>Get Prediction!</div> 
+                     <div id ="prediction_result"></div>
+                  </div>
+                  
+ 
+               </div> 
+            </div>
+         <div id ="health_prediction" class="main" style="margin-top: 0% ">  
+            <canvas id = "health_prediction_canvas"></canvas>
+         </div> 
       </div>
+      </div> 
 
       <div id="page_6" class ="page css-gradient-animation">
          <div class ="blob_bg">

@@ -1,4 +1,3 @@
-//const config = require("./package.json");
 const webpack = require('webpack')
 
 module.exports = {
@@ -7,9 +6,9 @@ module.exports = {
   devtool: "source-map",  // add source mapping
   output: {
     path: __dirname,
-    filename: './dist/main.js'  // path to output files
+    filename: './dist/main.js',  // path to output files
   },
-  target: 'web', // Important to set the target to 'node'
+  target: 'web', // Important to set the target to 'web'
   module: {
     rules: [
       { 
@@ -19,8 +18,7 @@ module.exports = {
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
         type: "asset/inline",
-    },
-
+    }
     ]
   }
 }

@@ -2,7 +2,9 @@ import { Chart, registerables} from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import 'chartjs-adapter-date-fns';
 import "bootstrap-icons/font/bootstrap-icons.css";
-import * as ort from 'onnxruntime-web';
+import linearModel from '../data/model_lr.json'
+import decisionTreeModel from '../data/model_dt.json'
+
 
 var chart_data;
 
@@ -41,6 +43,11 @@ async function initialize() {
   let health_go_back =document.getElementById("health_go_back")
   health_go_back.addEventListener("click", function () { turn_on_health_charts(false)}
     );
+
+
+  let submit_results =document.getElementById("submit_results")
+  submit_results.addEventListener("click", function () { predictClass()}
+      );
 
   document.getElementById('nav_header').addEventListener('click', function() {
     document.getElementById('header').scrollIntoView({
@@ -127,6 +134,9 @@ async function initialize() {
     });
   }
   
+
+  predictClass()
+
   wrap.addEventListener('scroll', checkActiveSection);
 
 
@@ -613,6 +623,8 @@ if (ch == 'n_healthy_time') {
 
 }
 
+
+
   return [data, type, options, explanation, title]
 }
 
@@ -706,42 +718,231 @@ function construct_chart(canvas_id, data, type, options) {
 
 }
 
-async function predictFoodHealthLR(fatContent, satFatContent, calories, sugar, fiber) {
-  // Load the ONNX model
-  const session = await ort.InferenceSession.create('../data/model_lr.onnx');
-
-  // Prepare the input data
-  const input = new ort.Tensor('float32', new Float32Array([fatContent, satFatContent, calories, sugar, fiber]), [1, 5]);
-
-  // Run the inference
-  const output = await session.run({ input });
-
-  // Extract the prediction and confidence factor
-  const prediction = output.value[0][0] > 0.5 ? 'Healthy' : 'Not Healthy';
-  const confidenceFactor = Math.max(output.value[0][0], 1 - output.value[0][0]);
-
-  return { prediction, confidence: confidenceFactor };
-}
-
-async function predictFoodHealthDT(fatContent, satFatContent, calories, sugar, fiber) {
-  // Load the ONNX model
-  const session = await ort.InferenceSession.create('../data/model_dt.onnx');
-
-  // Prepare the input data
-  const input = new ort.Tensor('float32', new Float32Array([fatContent, satFatContent, calories, sugar, fiber]), [1, 5]);
-
-  // Run the inference
-  const output = await session.run({ input });
-
-  // Extract the prediction and confidence factor
-  const prediction = output.value[0][0] > 0.5 ? 'Healthy' : 'Not Healthy';
-  const confidenceFactor = Math.max(output.value[0][0], 1 - output.value[0][0]);
-
-  return { prediction, confidence: confidenceFactor };
-}
-
 initialize()
 
+// Reconstruct the linear regression model
+function predictWithLinearRegression(inputData) {
+  const { coefficients, intercept, scaler_mean, scaler_scale } = linearModel;
+
+  // Apply the same scaling as in the Python preprocessing
+  const scaledInput = inputData //.map((value, index) => (value - scaler_mean[index]) / scaler_scale[index]);
+
+  const prediction = scaledInput.reduce((sum, value, index) => sum + value * coefficients[index], intercept);
+
+  const predictedClass = prediction >= 0 ? 1 : 0;
+  return predictedClass;
+}
+
+function predictWithDecisionTree(input) {
+
+      // Load the tree from the JSON file and use it in your prediction logic
+    const tree = decisionTreeModel;
+    const features = ['Calories',
+      'FatContent',
+      'SaturatedFatContent',
+      'CholesterolContent',
+      'SodiumContent',
+      'CarbohydrateContent',
+      'FiberContent',
+      'SugarContent',
+      'ProteinContent']
+
+      
+    console.log(features)
+
+  function getFeatureIndex(featureName) {
+    return features.indexOf(featureName);
+  }
+
+  function handleTruncatedBranch(classDistribution) {
+    let maxClass = null;
+    let maxCount = -1;
+    console.log(classDistribution)
+
+    for (const [classLabel, count] of Object.entries(classDistribution)) {
+        if (count > maxCount) {
+            maxClass = parseInt(classLabel);
+            maxCount = count;
+        }
+    }
+    console.log(maxClass)
+    return maxClass;
+}
+
+  let currentIndent = 1;
+
+  for (let i = 0; i < tree.length; i++) {
+      const node = tree[i];
+
+      if (node.indent != currentIndent) {
+          continue;  // Skip backtracking in the tree
+      }
+
+      console.log(node.rule)
+      console.log(currentIndent)
+      console.log(node.indent)
+
+      if (node.truncated) {
+        return handleTruncatedBranch(node.class_distribution);
+    }
+      
+      if (node.rule.includes("class")) {
+          return parseInt(node.rule.split(":")[1].trim());
+      }
+
+      const d_parts = node.rule.split("|--- ")[1]; 
+      const parts = d_parts.split(" "); 
+      const featureName = parts[0].trim();
+      const operator = parts[1].trim();
+      var th_pos = 2;
+      if (operator == ">") {th_pos = 3}
+      const threshold = parseFloat(parts[th_pos].trim());
+      const featureIndex = getFeatureIndex(featureName);
 
 
+      if (operator === "<=" && input[featureIndex] <= threshold) {
+          currentIndent = node.indent + 1;
+      } else if (operator === ">" && input[featureIndex] > threshold) {
+          currentIndent = node.indent + 1;
+      } 
+  }
 
+  return null;  // Default return if no class is reached
+}
+
+function draw_prediction(user_data, prediction) {
+
+  let canvas_id = "health_prediction_canvas"
+  let explanation_text_id = "prediction_result";
+  let prediction_result = prediction == 0 ? 'Not-Healthy' : 'Healthy';
+
+  var ch = "prediction";
+  var data = chart_data.filter(a => a.id == ch)[0];
+  var type; var options; var title;
+
+  if (ch == 'prediction') {
+
+    title = "Healthy Analysis"
+    data['datasets'][0]['backgroundColor'] = "rgba(54, 162, 235, 0.3)";
+    data['datasets'][0]['borderColor'] = "rgba(54, 162, 235, 0.6)";
+    data['datasets'][0]['borderDash'] = [5,5]
+    data['datasets'][1]['backgroundColor'] = "rgba(255, 99, 132, 0.3)"
+    data['datasets'][1]['borderColor'] = "rgba(255, 99, 132, 0.5)"
+    data['datasets'][1]['borderDash'] = [5,5]
+    data['datasets'][2]['backgroundColor'] = "rgba(129, 179, 4, 0.5)"
+    data['datasets'][2]['borderColor'] = "rgba(129, 179, 4)"
+    data['datasets'][2]['data'] = user_data;
+  
+    type = 'radar';
+    options = {
+      plugins: {
+        legend: {
+            display: true
+        },
+        title: {
+          display: true,
+          text: 'Healthy, Non-Healthy and User Input composition',
+          color: "#242449",
+          font: {
+            size: 18
+        }
+        },
+        datalabels: {
+          display: function(context) {
+            return context.datasetIndex === 2;
+          },
+          borderRadius: 4,
+          color: '#ffffff',
+          backgroundColor:  function(context)  {
+                  return context.dataset.borderColor
+          },
+          font: {
+            weight: 'bold'
+          },
+          formatter: function(value, context) {
+                return value.toFixed(2);
+          },
+          padding: 6
+        }
+      },
+    elements: {
+      line: {
+        tension: 0,
+        borderWidth: 3
+      },
+      point: {
+        pointStyle: true,
+        hitRadius: 2,
+      },
+    },
+    layout: {
+      padding: {
+        top: 20
+      }
+    },
+    maintainAspectRatio: true,
+    scales: {
+      r: {
+          max: 2,
+          min: 0,
+          pointLabels: {
+            font: {
+              weight: 'bold',
+              size: 16
+            }
+          },
+          ticks: {
+              stepSize: 0.25,
+              display:false,
+          }
+      }
+  }
+  
+  }
+  
+  }
+
+  document.getElementById(explanation_text_id).innerHTML = prediction_result;
+  document.getElementById(explanation_text_id).className = "";
+  document.getElementById(explanation_text_id).className = prediction_result;
+
+  construct_chart(canvas_id, data, type, options);
+}
+
+
+function predictClass() {
+  const calories = parseInt(document.getElementById('calories').value);
+  const fatContent = parseInt(document.getElementById('fatContent').value);
+  const saturatedFatContent = parseInt(document.getElementById('saturatedFatContent').value);
+  const cholesterolContent = parseInt(document.getElementById('cholesterolContent').value);
+  const sodiumContent = parseInt(document.getElementById('sodiumContent').value);
+  const carbohydrateContent = parseInt(document.getElementById('carbohydrateContent').value);
+  const fiberContent = parseInt(document.getElementById('fiberContent').value);
+  const sugarContent = parseInt(document.getElementById('sugarContent').value);
+  const proteinContent = parseInt(document.getElementById('proteinContent').value);
+
+  const data = [calories, fatContent, saturatedFatContent, cholesterolContent, sodiumContent, carbohydrateContent, fiberContent, sugarContent, proteinContent];
+  const predictionModel = document.querySelector('input[name="predictionModel"]:checked').value;
+
+  console.log(data)
+
+
+  let prediction;
+  if (predictionModel === 'linearRegression') {
+    prediction = predictWithLinearRegression(data);
+  } else {
+    prediction = predictWithDecisionTree(data);
+  }
+
+  function normalize(d) {
+    var ch = "radar_chart_normalization";
+    var m = chart_data.filter(a => a.id == ch)[0]['values'];
+    const result = d.map((value, index) => value / m[index]);
+    return result
+  }
+
+  var normalized_data = normalize(data)
+
+  draw_prediction(normalized_data, prediction)
+
+}

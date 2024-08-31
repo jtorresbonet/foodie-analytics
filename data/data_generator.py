@@ -7,11 +7,6 @@ Created on Mon Jul 29 10:54:26 2024
 
 #import libraries
 import pandas as pd
-from io import StringIO
-import io
-from requests_kerberos import HTTPKerberosAuth, OPTIONAL
-import warnings
-import requests
 import json
 from datetime import datetime, timedelta
 import numpy as np
@@ -268,6 +263,32 @@ chart_data = [
         ],
         'labels': df_healthy_grouped_normalized.columns.tolist()
     },
+    {
+    'id': 'prediction',
+    'datasets': [
+        {
+        'label': 'Healthy',
+        'order': 2,
+        'data': df_healthy_grouped_normalized.loc['Healthy'].tolist()
+        },
+        {
+        'label': 'Not Healthy',
+        'borderDash': [5, 5],
+        'order': 3,
+        'data': df_healthy_grouped_normalized.loc['Not Healthy'].tolist()
+        },
+        {
+        'label': 'User Input',
+        'order': 1,
+        'data': []
+        }
+        ],
+        'labels': df_healthy_grouped_normalized.columns.tolist()
+    },
+    {
+    'id': 'radar_chart_normalization',
+    'values': df_healthy_grouped.max().tolist()
+    },
         {
     'id': 'n_healthy_time',
     'datasets': [
@@ -301,12 +322,12 @@ with open('data.json', 'w') as f:
 
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, export_text
+from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
 import seaborn as sns
 import matplotlib.pyplot as plt
-import onnx
-from onnxmltools.convert import convert_sklearn   
+
 
 def get_confidence_factor(y_pred_proba):
     # Check if y_pred_proba is a 1D array (single prediction) or 2D array (multiple predictions)
@@ -324,6 +345,8 @@ def get_confidence_factor(y_pred_proba):
     
 # Load the data
 df_ml = df_recipes_clean[['is_healthy','Calories','FatContent','SaturatedFatContent','CholesterolContent','SodiumContent','CarbohydrateContent','FiberContent','SugarContent','ProteinContent']]
+df_ml['is_healthy'] = df_ml['is_healthy'].apply(lambda x: 1 if x == 'Healthy' else 0)
+
 
 # Calculate the correlation matrix
 corr_matrix = df_ml.corr()
@@ -342,6 +365,10 @@ y = df_ml['is_healthy']
 
 # Split the data into training and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Fit a standard scaler
+scaler = StandardScaler()
+scaler.fit(X_train)
 
 # Train a Logistic Regression model
 model_lr = LogisticRegression(max_iter=500)
@@ -366,9 +393,95 @@ y_pred_dt = model_dt.predict(X_test)
 accuracy_dt = accuracy_score(y_test, y_pred_dt)
 print('Decision Tree Classifier Accuracy:', accuracy_dt)
 print('Logistic Regression Confidence:', confidence_factor_dt)
- 
-onnx_model_lr = convert_sklearn(model_lr)
-onnx.save(onnx_model_lr, 'model_lr.onnx')
 
-onnx_model_dt = convert_sklearn(model_dt)
-onnx.save(onnx_model_dt, 'model_dt.onnx')
+model_lr_params = {
+    "coefficients": model_lr.coef_[0].tolist(),
+    "intercept": model_lr.intercept_[0].tolist(),
+    'scaler_mean': scaler.mean_.tolist(),
+    'scaler_scale': scaler.scale_.tolist()
+    }
+
+# Save the Logistic Regression model
+with open("model_lr.json", "w") as file:
+    json.dump(model_lr_params,file)
+    
+    
+tree_text = export_text(model_dt, feature_names=X.columns)
+tree_structure = tree_text.split('\n')
+    
+# Save the model data to a JSON file
+tree_structure_json = {}
+tree_structure_array = [];
+for i in range(len(tree_structure)):
+    tree_structure_json['original'] = tree_structure[i]
+    tree_structure_json['value'] = tree_structure[i].split('--- ')[1]
+    tree_structure_json['depth'] = len(tree_structure[i].split('   '))
+    tree_structure_array.append(tree_structure_json)
+
+
+
+def extract_decision_tree_logic(model, feature_names):
+    tree_text = export_text(model, feature_names=feature_names)
+    tree_structure = tree_text.split('\n')
+
+    # Prepare to extract information from the tree
+    tree = model.tree_
+    tree_json = []
+    idx = -1;
+
+    for line in tree_structure:
+        idx = idx  + 1;
+        if line.strip() == "":
+            continue
+
+        indent_level = line.count("|")  # Count the indent level
+        node = {
+            "indent": indent_level,
+            "rule": line.strip()
+        }
+
+        if tree.children_left[idx] == tree.children_right[idx]:  # Leaf node
+            # Node is a leaf, add the class directly from the line
+            if "class" in line:
+                node["rule"] = line.strip()
+            else:
+                if 'truncated' in node['rule']:
+                    class_counts = tree.value[idx][0]
+                    class_distribution = {str(i): int(class_counts[i]) for i in range(len(class_counts))}
+                    node["class_distribution"] = class_distribution
+                    node["truncated"] = True
+
+
+        tree_json.append(node)
+
+    return tree_json
+
+feature_names = X.columns.tolist();
+tree_json = extract_decision_tree_logic(model_dt, feature_names)
+ 
+with open('model_dt.json', 'w') as file:
+    json.dump(tree_json, file, indent=4)    
+    
+
+#Examples
+
+input_data =  [ 668, 0, 3, 56, 451, 44, 6, 26, 15 ]
+
+# Make a prediction with the Decision Tree Classifier
+dt_prediction = model_dt.predict([input_data])
+dt_confidence = model_dt.predict_proba([input_data])[0][dt_prediction[0]]
+print("Decision Tree Classifier Prediction:", dt_prediction[0])
+print("Decision Tree Classifier Confidence:", dt_confidence)
+
+# Make a prediction with the Logistic Regression model
+
+lr_prediction = model_lr.predict([input_data])
+lr_confidence = model_lr.predict_proba([input_data])[0][lr_prediction[0]]
+print("Logistic Regression Prediction:", lr_prediction[0])
+print("Logistic Regression Confidence:", lr_confidence)
+
+
+
+
+
+
